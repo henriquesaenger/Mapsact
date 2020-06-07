@@ -31,6 +31,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.navigation.NavigationView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseException;
@@ -39,6 +40,8 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
@@ -49,6 +52,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     DrawerLayout drawer;
     ArrayList<Restaurante> restaurantes;
     static ArrayList<String> menu_rest;
+    FirebaseFirestore banco = FirebaseFirestore.getInstance();
 
 
 
