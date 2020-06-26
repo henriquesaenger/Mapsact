@@ -1,30 +1,82 @@
 package com.example.mapsact;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Restaurante implements Serializable {
-    String nome;
-    double latitude;
-    double longitude;
-    String Tipo;
-    ArrayList<Pratos> menurestaur= new ArrayList<>();
-    Boolean havelactose;
-    Boolean havegluten;
+public class Restaurante {
+    String estabelecimento;
+    Double latitude;
+    Double longitude;
+    String tipo;
+    Double ID;
+    Boolean havelactoseopt;
+    Boolean haveglutenopt;
 
 
-    public Restaurante(String nome, double latitude, double longitude, String tipo){
-        this.nome= nome;
-        this.latitude=latitude;
-        this.longitude=longitude;
-        this.Tipo=tipo;
+    public Restaurante(String estabelecimento, Double latitude, Double longitude, String tipo, Double ID, Boolean havelactoseopt, Boolean haveglutenopt) {
+        this.estabelecimento = estabelecimento;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.tipo = tipo;
+        this.ID = ID;
+        this.havelactoseopt = havelactoseopt;
+        this.haveglutenopt = haveglutenopt;
     }
 
-    public void addPrato(String prato, String [] ingredientes,Boolean havelactose, Boolean havegluten){
-        this.menurestaur.add(new Pratos(prato, ingredientes, havelactose, havegluten, nome));
+    Restaurante() {
     }
 
+    public String getEstabelecimento() {
+        return estabelecimento;
+    }
 
+    public void setEstabelecimento(String estabelecimento) {
+        this.estabelecimento = estabelecimento;
+    }
 
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public double getID() {
+        return ID;
+    }
+
+    public void setID(double ID) {
+        this.ID = ID;
+    }
+
+    public Boolean getHavelactoseopt() {
+        return havelactoseopt;
+    }
+
+    public void setHavelactoseopt(Boolean havelactoseopt) {
+        this.havelactoseopt = havelactoseopt;
+    }
+
+    public Boolean getHaveglutenopt() {
+        return haveglutenopt;
+    }
+
+    public void setHaveglutenopt(Boolean haveglutenopt) {
+        this.haveglutenopt = haveglutenopt;
+    }
 }

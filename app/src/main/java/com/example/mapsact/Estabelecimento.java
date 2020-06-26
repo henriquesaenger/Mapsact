@@ -1,17 +1,16 @@
 package com.example.mapsact;
 
 import android.os.Bundle;
-import android.content.Intent;
-import java.io.Serializable;
-
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
 import androidx.fragment.app.FragmentActivity;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +20,9 @@ import java.util.Map;
 
 public class Estabelecimento extends FragmentActivity {
 
+    FirebaseFirestore banco = FirebaseFirestore.getInstance();          //inicia uma instância do Firestore
+
+    private CollectionReference collref= banco.collection("Restaurantes");
 
     static ArrayList<Pratos> pratos= new ArrayList<Pratos>();                                         //pega o menu do restaurante clicado
 
@@ -30,20 +32,29 @@ public class Estabelecimento extends FragmentActivity {
     HashMap<String, String> pratos_menu= new HashMap<String, String>();
     String aux;
 
+    @Override
+    public void onBackPressed()
+    {
+        pratos.clear();
+        nome_pratos.clear();
+        ingred.clear();
+        pratos_menu.clear();
+        super.onBackPressed();  // optional depending on your needs
+    }
+
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.estabelecimento);
         ListView menu= (ListView)findViewById(R.id.menu);
-
-
-
+        Log.d("TAG", "Entrou no Estabelecimento");
 
 
         for(Pratos p: pratos) {
             nome_pratos.add(p.prato);
+
             aux="";
-            for(String ingrediente: p.ingredientes.keySet()){
+            for(String ingrediente: p.ingredientes){
                 aux+=" - "+ingrediente;
             }
             ingred.add(aux);
@@ -77,5 +88,7 @@ public class Estabelecimento extends FragmentActivity {
         });
 
     }
+
+
 
 }

@@ -10,6 +10,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -29,18 +30,18 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Source;
 import com.parse.Parse;
-import com.parse.ParseACL;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -50,9 +51,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationManager locationManager;
     LocationListener locationListener;
     DrawerLayout drawer;
-    ArrayList<Restaurante> restaurantes;
-    static ArrayList<String> menu_rest;
-    FirebaseFirestore banco = FirebaseFirestore.getInstance();
+
+    ArrayList<Restaurante> restaurantes= new ArrayList<Restaurante>();
+    ArrayList<Pratos> pratos= new ArrayList<Pratos>();
+    FirebaseFirestore banco = FirebaseFirestore.getInstance();          //inicia uma instância do Firestore
+
+    CollectionReference collref= banco.collection("Restaurantes");
+
 
 
 
@@ -92,6 +97,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
 
 
         // Enable Local Datastore.
@@ -147,28 +154,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         mMap.setOnInfoWindowClickListener(this);
-        restaurantes=locais(restaurantes);
-
+        loadData();
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 LatLng user = new LatLng(location.getLatitude(), location.getLongitude());          //pega Latitude e longitude do usuário
-
                 mMap.clear();                                                                       //limpa o mapa de marcadores para atualizar o marcador de usuário
                 mMap.setMyLocationEnabled(true);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(user, 15));                     //move a câmera para onde o usuário está
+                loadData();
+
+
                 for(Restaurante s: restaurantes){
-                    if(s.Tipo=="Restaurante"){
-                       mMap.addMarker(new MarkerOptions().position(new LatLng(s.latitude,s.longitude)).title(s.nome).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    LatLng x= new LatLng(s.latitude, s.longitude);
+                    if(s.tipo.equals("Restaurante")){
+                       mMap.addMarker(new MarkerOptions().position(x).title(s.estabelecimento).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
 
                     }
-                    if(s.Tipo=="Café"){
-                       mMap.addMarker(new MarkerOptions().position(new LatLng(s.latitude, s.longitude)).title(s.nome).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+                    else{
+                        if(s.tipo.equals("Café")){
+                            mMap.addMarker(new MarkerOptions().position(new LatLng(s.latitude, s.longitude)).title(s.estabelecimento).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+                        }
+
                     }
                 }
 
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(user, 15));                     //move a câmera para onde o usuário está
+
+                restaurantes.clear();
+
+
+
 
             }
 
@@ -208,62 +225,81 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public ArrayList<Restaurante> locais(ArrayList<Restaurante> restaurante){
-        restaurante= new ArrayList<Restaurante>();
-        Restaurante subway_bento=new Restaurante("Subway Bento", -31.7628906,-52.3345544, "Restaurante");
-        subway_bento.addPrato("Salada de Frango", new String[]{"Tomate", "Azeitona", "Cebola", "Rúcula", "Pimentão", "Pepino", "Frango", "Alface"}, false, false);
-        subway_bento.addPrato("Salada BMT", new String[]{"Tomate", "Azeitona", "Pepino","Pimentão", "Rúcula", "Presunto", "Salame", "Pepperoni", "Alface"}, false, false);
-        restaurante.add(subway_bento);
 
-
-        Restaurante padaria_Anchieta= new Restaurante("Padaria Anchieta", -31.7565992,-52.337372, "Café");
-        padaria_Anchieta.addPrato("Suflê de Cenoura", new String[]{"Cenoura", "Cebola", "Leite de arroz", "Amido de Milho", "Margarina sem lactose"}, false, false);
-        padaria_Anchieta.addPrato("Coxinha", new String[]{"Margarina sem lactose", "Batata", "Farinha de arroz", "Frango", "Cebola", "Tomate","Caldo de frango sem glúten"}, false, false);
-        padaria_Anchieta.addPrato("Pão de queijo", new String[]{"Polvilho azedo", "Polvilho doce", "Batata", "Ovo", "Água", "Fermento"},false, true);
-        restaurante.add(padaria_Anchieta);
-
-        Restaurante griffos = new Restaurante("Griffos", -31.7549066,-52.336653, "Restaurante");
-        griffos.addPrato("Massa a Carbonara", new String[]{"Massa sem glúten", "Bacon", "Cebola", "Alho", "Ovo", "Azeite de oliva", "Azeitona"}, false, false);
-        griffos.addPrato("Mac & Cheese", new String[]{"Castanha de caju", "Alho", "Cebola", "Batata", "limão", "Macarrão" }, false, true);
-        restaurante.add(griffos);
-
-        Restaurante rodeio_pastelaria= new Restaurante("Pastelaria Rodeio", -31.7290896,-52.3438763, "Restaurante");
-        rodeio_pastelaria.addPrato("Pastel Sem Graça", new String[]{"Massa de pastel", "Ovo", "Carne moída"}, false, true);
-        rodeio_pastelaria.addPrato("Pastel de Vento", new String[]{"Massa de Pastel"}, false, true);
-        restaurante.add(rodeio_pastelaria);
-
-        Restaurante cachorro_do_jao= new Restaurante("Cachorro do Jão", -31.7320576,-52.3449867, "Restaurante");
-        cachorro_do_jao.addPrato("Pancho Tradicional", new String[]{"Pão", "Salsicha Defumada", "Mostarda Agridoce"}, false, true);
-        cachorro_do_jao.addPrato("Porção de Fritas", new String[]{"Batata"}, false, false);
-        restaurante.add(cachorro_do_jao);
-
-        Restaurante colosso_cohab= new Restaurante("Colosso Cohabpel", -31.7521214,-52.3368854, "Café");
-        colosso_cohab.addPrato("Pão de soja", new String[]{"Ovo", "Polvilho doce", "Farinha de arroz", "Óleo de Soja", "Água", "Açúcar", "sal", "Fermento"}, false, false);
-        colosso_cohab.addPrato("Salgadinho de Queijo", new String[]{"Batata", "Queijo", "Fécula de batata", "Frango"}, true, false);
-        colosso_cohab.addPrato("Empadinha", new String[]{"Farinha de Arroz", "Polvilho doce", "Farinha de linhaça", "sal", "Manteiga ghee", "Ovo", "Água", "Cenoura", "Tomate", "Cebola", "Vagem", "Tofu"}, false, false);
-        restaurante.add(colosso_cohab);
-
-        Restaurante aveiro_padaria= new Restaurante("Padaria Aveiro", -31.757199,-52.3454862, "Café");
-        aveiro_padaria.addPrato("Bolo de banana e cenoura", new String[]{"Banana", "Ovo", "Óleo de côco", "Fécula de batata", "Farinha de amêndoas", "Cenoura", "Vinagre de maçã", "Bicarbonato de sódio", "Mel", "Canela", "Gengibre"}, false, false);
-        restaurante.add(aveiro_padaria);
-
-
-
-        return restaurante;
-
-    }
 
     @Override
     public void onInfoWindowClick(Marker marker) {
         // When touch InfoWindow on the market, display another screen.
         Intent intent = new Intent(this, Estabelecimento.class);
         for(Restaurante r: restaurantes){
-            if(marker.getTitle().equals(r.nome)){
-                Estabelecimento.pratos=r.menurestaur;
+            if(marker.getTitle().equals(r.estabelecimento)){
+                Log.d("TAG", "ID:"+r.ID);
+                banco.collectionGroup("Pratos").whereEqualTo("IDRest", r.ID).get(Source.CACHE)
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d("TAG", "Pratos:"+document.getData());
+                                Map<String, Object> map = document.getData();
+                                Pratos p= new Pratos();
+                                p.havegluten=document.getBoolean("Gluten");
+                                p.havelactose=document.getBoolean("Lactose");
+                                p.ID=document.getDouble("IDRest");
+                                p.prato=document.getString("Nome");
+                                p.ingredientes=(ArrayList<String>)map.get("Ingredientes");
+                                pratos.add(p);
+                                if(p.ID==3.0|| p.ID==6.0){
+                                    Log.d("TAG", "Prato:"+p.prato+"\nGluten"+p.havegluten+"\nLactose"+p.havelactose+"\nIDRest:"+p.ID+"\nIngredientes"+p.ingredientes);
+                                }
+
+                            }
+                        } else {
+                            Log.d("TAG", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+                Estabelecimento.pratos= this.pratos;
+                Log.d("TAG", "Pratos:"+pratos.toString());
+                //pratos.clear();  // aqui pegava todos os restaurantes menos 2
             }
+
         }
         startActivity(intent);
+
+
     }
+
+
+
+    public void loadData(){
+        Query query= banco.collection("Restaurantes");
+        query.get(Source.CACHE).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Restaurante x= new Restaurante();
+                        x.estabelecimento= document.getString("Estabelecimento");
+                        x.haveglutenopt=document.getBoolean("GlutenFO");
+                        x.havelactoseopt=document.getBoolean("LactoseFO");
+                        x.ID= document.getDouble("ID");
+                        x.tipo=document.getString("Tipo");
+                        x.longitude=document.getGeoPoint("Localizacao").getLongitude();
+                        x.latitude=document.getGeoPoint("Localizacao").getLatitude();
+                        restaurantes.add(x);
+
+                    }
+                } else {
+                    Log.d("TAG", "Error getting documents: ", task.getException());
+                }
+            }
+        });
+    }
+
+
+
+
 
 
 }
