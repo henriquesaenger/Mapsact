@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".DBox"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="15dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dê sua opinião sobre o prato:"
+        android:textSize="22sp"
+        android:textAlignment="center"/>
+
+    <CheckBox
+        android:id="@+id/gostei"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Gostei do Prato"
+        android:layout_marginStart="120dp"
+        android:layout_marginTop="20dp"
+        />
+    <CheckBox
+        android:id="@+id/naogostei"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="120dp"
+        android:text="Não Gostei do Prato"
+        />
+    <Button
+        android:id="@+id/avaliar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Avaliar"
+        android:layout_marginStart="145dp"
+        android:textAlignment="center"/>
+
+</LinearLayout>

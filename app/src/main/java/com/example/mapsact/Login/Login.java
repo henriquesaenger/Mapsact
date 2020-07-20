@@ -1,8 +1,5 @@
 package com.example.mapsact.Login;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,13 +8,23 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.mapsact.MapsActivity;
 import com.example.mapsact.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Login extends AppCompatActivity {
@@ -27,6 +34,8 @@ public class Login extends AppCompatActivity {
     private TextView txtUs;
     private TextView txtPs;
     FirebaseAuth logAuth;
+    FirebaseFirestore banco= FirebaseFirestore.getInstance();
+    CollectionReference collref= banco.collection("Usuários");
 
 
     @Override
@@ -89,6 +98,7 @@ public class Login extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("TAG", "createUserWithEmail:success");
                             FirebaseUser user = logAuth.getCurrentUser();
+                            adicionaUser(user.getUid());//adiciona o usuário ao banco de dados de usuários
                             Intent intent = new Intent(Login.this, MapsActivity.class);
                             startActivity(intent);
                             finish();
@@ -129,6 +139,25 @@ public class Login extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private void adicionaUser(String id){
+        Map<String, Object> usuario= new HashMap<>();
+        usuario.put("Lactose", true);
+        usuario.put("Gluten", true);
+        banco.collection("Usuários").document(id)
+                .set(usuario).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("TAG", "DocumentSnapshot successfully written!");
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("TAG", "Error writing document", e);
+                    }
+                });
     }
 
 

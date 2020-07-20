@@ -53,7 +53,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     DrawerLayout drawer;
 
     ArrayList<Restaurante> restaurantes= new ArrayList<Restaurante>();
-    ArrayList<Pratos> pratos= new ArrayList<Pratos>();
+    static ArrayList<Pratos> pratos= new ArrayList<Pratos>();
     FirebaseFirestore banco = FirebaseFirestore.getInstance();          //inicia uma instância do Firestore
 
     CollectionReference collref= banco.collection("Restaurantes");
@@ -231,40 +231,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onInfoWindowClick(Marker marker) {
         // When touch InfoWindow on the market, display another screen.
         Intent intent = new Intent(this, Estabelecimento.class);
-        for(Restaurante r: restaurantes){
-            if(marker.getTitle().equals(r.estabelecimento)){
-                Log.d("TAG", "ID:"+r.ID);
-                banco.collectionGroup("Pratos").whereEqualTo("IDRest", r.ID).get(Source.CACHE)
-                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("TAG", "Pratos:"+document.getData());
-                                Map<String, Object> map = document.getData();
-                                Pratos p= new Pratos();
-                                p.havegluten=document.getBoolean("Gluten");
-                                p.havelactose=document.getBoolean("Lactose");
-                                p.ID=document.getDouble("IDRest");
-                                p.prato=document.getString("Nome");
-                                p.ingredientes=(ArrayList<String>)map.get("Ingredientes");
-                                pratos.add(p);
-                                if(p.ID==3.0|| p.ID==6.0){
-                                    Log.d("TAG", "Prato:"+p.prato+"\nGluten"+p.havegluten+"\nLactose"+p.havelactose+"\nIDRest:"+p.ID+"\nIngredientes"+p.ingredientes);
-                                }
+        loadPratos(marker);
 
-                            }
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
-                Estabelecimento.pratos= this.pratos;
-                Log.d("TAG", "Pratos:"+pratos.toString());
-                //pratos.clear();  // aqui pegava todos os restaurantes menos 2
-            }
-
-        }
         startActivity(intent);
 
 
@@ -274,7 +242,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void loadData(){
         Query query= banco.collection("Restaurantes");
-        query.get(Source.CACHE).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
@@ -296,6 +264,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
+    public void loadPratos(Marker marker){
+        for(Restaurante r: restaurantes){
+            if(marker.getTitle().equals(r.estabelecimento)){
+                //Log.d("TAG", "ID:"+r.ID);
+                banco.collectionGroup("Pratos").whereEqualTo("IDRest", r.ID).get(Source.SERVER)
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        //Log.d("TAG", "Pratos:"+document.getData());
+                                        Map<String, Object> map = document.getData();
+                                        //Log.d("TAG", document.toString());
+                                        Pratos p= new Pratos();
+                                        p.ID=document.getId();
+                                        p.havegluten=document.getBoolean("Gluten");
+                                        p.havelactose=document.getBoolean("Lactose");
+                                        p.IDR=document.getDouble("IDRest");
+                                        p.prato=document.getString("Nome");
+                                        p.ingredientes=(ArrayList<String>)map.get("Ingredientes");
+                                        pratos.add(p);
+                                        Log.d("TAG", "Verificação Mapsact do Pratos dentro do Loop"+p.toString());
+                                        Log.d("TAG", "Verificação Mapsact do Pratos dentro do Loop"+pratos.toString());
+
+                                        //if(p.ID==3.0|| p.ID==6.0){
+                                        //    Log.d("TAG", "Prato:"+p.prato+"\nGluten"+p.havegluten+"\nLactose"+p.havelactose+"\nIDRest:"+p.ID+"\nIngredientes"+p.ingredientes);
+                                        //}
+
+                                    }
+                                } else {
+                                    Log.d("TAG", "Error getting documents: ", task.getException());
+                                }
+                            }
+                        });
+                Log.d("TAG", "Verificação Mapsact do Pratos Mapsact"+this.pratos.toString());
+                //Estabelecimento.pratos.clear();
+                //Estabelecimento.pratos.addAll(this.pratos);
+                Log.d("TAG", "Verificação MapsAct do Pratos estabelecimento"+Estabelecimento.pratos.toString());
+                pratos.clear();
+                //Log.d("TAG", "Pratos:"+pratos.toString());
+                //pratos.clear();  // aqui pegava todos os restaurantes menos 2
+            }
+
+        }
+    }
+
 
 
 

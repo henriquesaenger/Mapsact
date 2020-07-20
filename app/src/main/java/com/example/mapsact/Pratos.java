@@ -1,25 +1,25 @@
 package com.example.mapsact;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 public class Pratos {
     String prato;
     ArrayList<String> ingredientes;
     Boolean havelactose;
     Boolean havegluten;
-    Double ID;
+    String ID;
+    Double IDR;
 
     public Pratos() {
     }
 
-    public Pratos(String prato, ArrayList<String> ingredientes, Boolean havelactose, Boolean havegluten, Double ID) {
+    public Pratos(String prato, ArrayList<String> ingredientes, Boolean havelactose, Boolean havegluten, String ID, Double IDR) {
         this.prato = prato;
         this.ingredientes = ingredientes;
         this.havelactose = havelactose;
         this.havegluten = havegluten;
         this.ID = ID;
+        this.IDR = IDR;
     }
 
     public String getPrato() {
@@ -54,11 +54,19 @@ public class Pratos {
         this.havegluten = havegluten;
     }
 
-    public Double getID() {
+    public String getID() {
         return ID;
     }
 
-    public void setID(Double ID) {
+    public void setID(String ID) {
         this.ID = ID;
+    }
+
+    public Double getIDR() {
+        return IDR;
+    }
+
+    public void setIDR(Double IDR) {
+        this.IDR = IDR;
     }
 }
