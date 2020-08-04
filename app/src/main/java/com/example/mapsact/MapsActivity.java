@@ -10,6 +10,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -62,7 +63,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -97,7 +97,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
 
 
 
@@ -164,7 +163,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.clear();                                                                       //limpa o mapa de marcadores para atualizar o marcador de usuário
                 mMap.setMyLocationEnabled(true);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(user, 15));                     //move a câmera para onde o usuário está
-                loadData();
+
 
 
                 for(Restaurante s: restaurantes){
@@ -232,6 +231,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // When touch InfoWindow on the market, display another screen.
         Intent intent = new Intent(this, Estabelecimento.class);
         loadPratos(marker);
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //Write whatever to want to do after delay specified (1 sec)
+                Log.d("Handler", "Running Handler");
+            }
+        }, 1000);
 
         startActivity(intent);
 
@@ -247,6 +254,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                //Write whatever to want to do after delay specified (1 sec)
+                                Log.d("Handler", "Running Handler");
+                            }
+                        }, 1000);
                         Restaurante x= new Restaurante();
                         x.estabelecimento= document.getString("Estabelecimento");
                         x.haveglutenopt=document.getBoolean("GlutenFO");
@@ -268,14 +283,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void loadPratos(Marker marker){
         for(Restaurante r: restaurantes){
             if(marker.getTitle().equals(r.estabelecimento)){
-                //Log.d("TAG", "ID:"+r.ID);
-                banco.collectionGroup("Pratos").whereEqualTo("IDRest", r.ID).get(Source.SERVER)
+                Log.d("TAG", "Nome:"+r.estabelecimento);
+                banco.collectionGroup("Pratos").whereEqualTo("IDRest", r.ID).get(Source.CACHE)
                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
                                     for (QueryDocumentSnapshot document : task.getResult()) {
-                                        //Log.d("TAG", "Pratos:"+document.getData());
+                                        final Handler handler = new Handler();
+                                        handler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                //Write whatever to want to do after delay specified (1 sec)
+                                                Log.d("Handler", "Running Handler");
+                                            }
+                                        }, 1000);
+                                        Log.d("TAG", "Pratos:"+document.getData());
                                         Map<String, Object> map = document.getData();
                                         //Log.d("TAG", document.toString());
                                         Pratos p= new Pratos();
@@ -300,16 +323,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         });
                 Log.d("TAG", "Verificação Mapsact do Pratos Mapsact"+this.pratos.toString());
-                //Estabelecimento.pratos.clear();
-                //Estabelecimento.pratos.addAll(this.pratos);
+                Estabelecimento.pratos.clear();
+                Estabelecimento.pratos.addAll(this.pratos);
                 Log.d("TAG", "Verificação MapsAct do Pratos estabelecimento"+Estabelecimento.pratos.toString());
-                pratos.clear();
-                //Log.d("TAG", "Pratos:"+pratos.toString());
+                //pratos.clear();
+                Log.d("TAG", "Pratos:"+pratos.toString());
                 //pratos.clear();  // aqui pegava todos os restaurantes menos 2
+
+            }
+            else{
+                Log.d("TAG", "não deu");
             }
 
         }
+
     }
+
 
 
 
