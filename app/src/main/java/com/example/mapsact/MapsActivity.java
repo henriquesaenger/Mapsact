@@ -10,7 +10,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -181,7 +180,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
 
 
-                restaurantes.clear();
+                //restaurantes.clear();
 
 
 
@@ -231,14 +230,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // When touch InfoWindow on the market, display another screen.
         Intent intent = new Intent(this, Estabelecimento.class);
         loadPratos(marker);
-        final Handler handler = new Handler();
+        Log.d("TAG", "passou do loadPratos(marker)");
+        /*final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 //Write whatever to want to do after delay specified (1 sec)
                 Log.d("Handler", "Running Handler");
             }
-        }, 1000);
+        }, 1000);*/
 
         startActivity(intent);
 
@@ -254,14 +254,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        final Handler handler = new Handler();
+                        /*final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 //Write whatever to want to do after delay specified (1 sec)
                                 Log.d("Handler", "Running Handler");
                             }
-                        }, 1000);
+                        }, 1000);*/
                         Restaurante x= new Restaurante();
                         x.estabelecimento= document.getString("Estabelecimento");
                         x.haveglutenopt=document.getBoolean("GlutenFO");
@@ -271,7 +271,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         x.longitude=document.getGeoPoint("Localizacao").getLongitude();
                         x.latitude=document.getGeoPoint("Localizacao").getLatitude();
                         restaurantes.add(x);
-
                     }
                 } else {
                     Log.d("TAG", "Error getting documents: ", task.getException());
@@ -281,23 +280,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void loadPratos(Marker marker){
+        Log.d("TAG", "restaurantes"+this.restaurantes.toString());
+        Log.d("TAG", "pratos"+Estabelecimento.pratos.toString());
         for(Restaurante r: restaurantes){
+            Log.d("TAG", "Entrou no for de load pratos");
             if(marker.getTitle().equals(r.estabelecimento)){
-                Log.d("TAG", "Nome:"+r.estabelecimento);
+                Log.d("TAG", "entrou no if de load pratos"+"Nome:"+r.estabelecimento);
                 banco.collectionGroup("Pratos").whereEqualTo("IDRest", r.ID).get(Source.CACHE)
                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>(){
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
+                                    Log.d("TAG", "entrou no if do On complete");
                                     for (QueryDocumentSnapshot document : task.getResult()) {
-                                        final Handler handler = new Handler();
+                                        /*final Handler handler = new Handler();
                                         handler.postDelayed(new Runnable() {
                                             @Override
                                             public void run() {
                                                 //Write whatever to want to do after delay specified (1 sec)
                                                 Log.d("Handler", "Running Handler");
                                             }
-                                        }, 1000);
+                                        }, 1000);*/
                                         Log.d("TAG", "Pratos:"+document.getData());
                                         Map<String, Object> map = document.getData();
                                         //Log.d("TAG", document.toString());
